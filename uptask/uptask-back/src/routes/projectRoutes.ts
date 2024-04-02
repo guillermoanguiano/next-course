@@ -22,7 +22,7 @@ router.get(
     "/:id",
     param("id").isMongoId().withMessage("Invalid ID"),
     handleInputErrors,
-    ProjectController.getProject
+    ProjectController.getProjectById
 );
 router.put(
     "/:id",
@@ -39,5 +39,8 @@ router.delete(
     handleInputErrors,
     ProjectController.deleteProject
 );
+
+// *  Routes for tasks
+router.post("/:projectId/tasks",);
 
 export default router;
