@@ -1,0 +1,20 @@
+# Node.js dependencies
+/node_modules
+
+# Log files
+npm-debug.log*
+
+# Environment files
+.env*
+!.env.demo
+
+# IDE or text editor files
+.vscode/
+.idea/
+
+# Build output and generated dependencies
+/build
+.DS_Store
+
+# Add any OS-specific files here
+accounts.txt
