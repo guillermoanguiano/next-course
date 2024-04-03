@@ -19,10 +19,10 @@ export class ProjectController {
         try {
             const projects = await Project.find({});
 
-            if (!projects)
-                return res
-                    .status(404)
-                    .send({ success: false, message: "There are no projects" });
+            if (!projects) {
+                const error = new Error("There are no projects");
+                return res.status(404).json({ msg: error.message });
+            }
 
             res.json(projects);
         } catch (error) {
@@ -34,10 +34,10 @@ export class ProjectController {
         try {
             const project = await Project.findById(params.id).populate("tasks");
 
-            if (!project)
-                return res
-                    .status(404)
-                    .send({ success: false, message: "No project found" });
+            if (!project) {
+                const error = new Error("Project not found");
+                return res.status(404).json({ msg: error.message });
+            }
 
             res.json(project);
         } catch (error) {
@@ -45,14 +45,18 @@ export class ProjectController {
         }
     };
 
-    static updateProject = async ({ params, body }: Request, res: Response) => {
+    static updateProject = async (req: Request, res: Response) => {
         try {
-            const project = await Project.findByIdAndUpdate(params.id, body);
+            const project = await Project.findById(req.params.id);
+            if (!project) {
+                const error = new Error("Project not found");
+                return res.status(404).json({ msg: error.message });
+            }
 
-            if (!project)
-                return res
-                    .status(404)
-                    .send({ success: false, message: "No project found" });
+            project.projectName = req.body.projectName;
+            project.clientName = req.body.clientName;
+            project.description = req.body.description;
+            await project.save();
 
             res.json({
                 success: true,
@@ -67,10 +71,10 @@ export class ProjectController {
         try {
             const project = await Project.findById(params.id);
 
-            if (!project)
-                return res
-                    .status(404)
-                    .send({ success: false, message: "No project found" });
+            if (!project) {
+                const error = new Error("Project not found");
+                return res.status(404).json({ msg: error.message });
+            }
 
             await project.deleteOne();
 

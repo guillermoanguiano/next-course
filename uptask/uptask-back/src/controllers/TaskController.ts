@@ -32,37 +32,20 @@ export class TaskController {
         }
     };
 
-    static getTaskById = async ({ params }: Request, res: Response) => {
+    static getTaskById = async (req: Request, res: Response) => {
         try {
-            const { taskId, projectId } = params;
-            const task = await Task.findOne({
-                _id: taskId,
-                project: projectId,
-            });
-
-            if (!task) {
-                const error = new Error("Task not found");
-                return res.status(404).json({ msg: error.message });
-            }
-
-            res.send(task);
+            res.send(req.task);
         } catch (error) {
             res.status(500).json({ error: "Something went wrong" });
         }
     };
 
-    static updateTask = async ({ params, body }: Request, res: Response) => {
+    static updateTask = async (req: Request, res: Response) => {
         try {
-            const { taskId, projectId } = params;
-            const task = await Task.findOneAndUpdate(
-                { _id: taskId, project: projectId },
-                body
-            );
-            if (!task) {
-                const error = new Error("Task not found");
-                return res.status(404).json({ msg: error.message });
-            }
-            res.send({ success: true, task });
+            req.task.name = req.body.name;
+            req.task.description = req.body.description;
+            await req.task.save();
+            res.send({ success: true, task: req.task });
         } catch (error) {
             res.status(500).json({ error: "Something went wrong" });
         }
@@ -70,18 +53,12 @@ export class TaskController {
 
     static updateTaskStatus = async (req: Request, res: Response) => {
         try {
-            const { taskId, projectId } = req.params;
-            const task = await Task.findById(taskId);
-            if (!task) {
-                const error = new Error("Task not found");
-                return res.status(404).json({ msg: error.message });
-            }
             const { status } = req.body;
 
-            task.status = status;
-            await task.save();
+            req.task.status = status;
+            await req.task.save();
 
-            res.send({ success: true, task });
+            res.send({ success: true, task: req.task });
         } catch (error) {
             res.status(500).json({ error: "Something went wrong" });
         }
@@ -89,24 +66,10 @@ export class TaskController {
 
     static deleteTask = async (req: Request, res: Response) => {
         try {
-            const { taskId, projectId } = req.params;
-            const task = await Task.findOne({
-                _id: taskId,
-                project: projectId,
-            });
-
-            if (!task) {
-                return res
-                    .status(404)
-                    .send({ success: false, message: "Task not found" });
-            }
-
             req.project.tasks = req.project.tasks.filter(
-                (task) => task.toString() !== taskId
+                (task) => task.toString() !== req.task.id.toString()
             );
-
-            await Promise.allSettled([task.deleteOne(), req.project.save()]);
-
+            await Promise.allSettled([req.task.deleteOne(), req.project.save()]);
             res.send({ success: true, message: "Task deleted" });
         } catch (error) {
             res.status(500).json({ error: "Something went wrong" });
