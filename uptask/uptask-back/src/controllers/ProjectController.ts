@@ -7,12 +7,12 @@ export class ProjectController {
         const project = new Project(body);
         try {
             await project.save();
-            
+
             chalk.success(`Project ${project.projectName} created`);
 
             res.send(project);
         } catch (error) {
-            chalk.error(error);
+            res.status(500).json({ error: "Something went wrong" });
         }
     };
     static getAllProjects = async (_: Request, res: Response) => {
@@ -26,16 +26,13 @@ export class ProjectController {
 
             res.json(projects);
         } catch (error) {
-            chalk.error(error);
+            res.status(500).json({ error: "Something went wrong" });
         }
     };
 
-    static getProjectById = async (
-        { params: { id } }: Request,
-        res: Response
-    ) => {
+    static getProjectById = async ({ params }: Request, res: Response) => {
         try {
-            const project = await Project.findById(id);
+            const project = await Project.findById(params.id).populate("tasks");
 
             if (!project)
                 return res
@@ -44,16 +41,13 @@ export class ProjectController {
 
             res.json(project);
         } catch (error) {
-            chalk.error(error);
+            res.status(500).json({ error: "Something went wrong" });
         }
     };
 
-    static updateProject = async (
-        { params: { id }, body }: Request,
-        res: Response
-    ) => {
+    static updateProject = async ({ params, body }: Request, res: Response) => {
         try {
-            const project = await Project.findByIdAndUpdate(id, body);
+            const project = await Project.findByIdAndUpdate(params.id, body);
 
             if (!project)
                 return res
@@ -65,16 +59,13 @@ export class ProjectController {
                 message: `Project ${project?.projectName} updated`,
             });
         } catch (error) {
-            chalk.error(error);
+            res.status(500).json({ error: "Something went wrong" });
         }
     };
 
-    static deleteProject = async (
-        { params: { id } }: Request,
-        res: Response
-    ) => {
+    static deleteProject = async ({ params }: Request, res: Response) => {
         try {
-            const project = await Project.findById(id);
+            const project = await Project.findById(params.id);
 
             if (!project)
                 return res
@@ -90,7 +81,7 @@ export class ProjectController {
                 message: `Project ${project?.projectName} deleted`,
             });
         } catch (error) {
-            chalk.error(error);
+            res.status(500).json({ error: "Something went wrong" });
         }
     };
 }
